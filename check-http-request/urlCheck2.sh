@@ -41,7 +41,6 @@ if [[ -e $DIR ]]
     then
       echo "${DIR} already exists. Please re-run the $0"
       exit 1
-     # menu
    else
     if [[ -w $PWD ]] 
     then
@@ -50,12 +49,10 @@ if [[ -e $DIR ]]
     else 
       echo "You don't have permissionss to $PWD"
       exit 2
-      #menu
     fi
     cd /home/${home_dir}/$DIR
 fi
 }
- set -x # uncoment to start debugging
 
 show_pattern () {
 for i in $( cat $patternUrlLocation ) ; do
@@ -76,7 +73,7 @@ get_url () {
      content=$(sed '$ d' <<< "$response")   # get all but the last line which contains the status code
      url_content=$(grep ^Location: <<< "$response")
 #     expiry_date=`$response | egrep -i "Expiration Date:|Expires on"| head -1 | awk '{print $NF}'`
-      echo "###Getting $# ###"
+      echo "###Getting http-request###"
      if [[ $http_code =~ ^2:500 ]]; then
        if [[ $http_code -eq 200 && $pattern_url == $url_content ]]; then 
             echo "${url} Status: #200. No redirects.A url "$url_content" matches $pattern_url" >> ./existUrl_$listUrlResult
@@ -89,8 +86,6 @@ get_url () {
            echo "${url} Status: #403 Forbidden " >> ./noExistUrl_$listUrlResult
        elif [[ ($http_code -eq 301 && $http_code -eq 404) || ($http_code -eq 404 && $http_code -eq 404) ]]; then
            echo "${url} Status:#301 & #404 particulary works" >> ./noExistUrl_$listUrlResult
-#       elif [[ $http_code -eq 000 ]] ; then # не проверяет если домен истек...
-#            echo "${url} Status: #404 Domain has been expired " >> ./noExistUrl_$listUrlResult
      else
        echo "${url} Status: #404 Not Found" >> ./noExistUrl_$listUrlResult
        exit 1
@@ -98,4 +93,4 @@ get_url () {
 done  < $listUrlLocation
 }
 menu
-set +x
+# set +x
