@@ -7,9 +7,9 @@
 ## patternUrlLocation list of pattern-urls
 
 home_dir=$(whoami)
-patternUrlLocation=/home/${home_dir}/list_pattern_urls.txt
-listUrlLocation=/home/${home_dir}/list_of_urls2.txt # path to ours file
-listUrlResult="list.javarush.csv" # output file
+patternUrlLocation=/home/${home_dir}/list_pattern_urls.txt # pattern file
+listUrlLocation=/home/${home_dir}/list_of_urls.txt # path to ours file
+listUrlResult="name_of_file.csv" # output file
 
 # Creates text files for storing results
 echo " Creating files"
@@ -42,7 +42,6 @@ if [[ -e $DIR ]]
     then
       echo "${DIR} already exists. Please re-run the $0"
       exit 1
-     # menu
    else
     if [[ -w $PWD ]] 
     then
@@ -70,10 +69,10 @@ get_url () {
    create_dir
    # Use IFS to separate ours listOfUrls as a url
 	 while IFS= read -r "url"	 # echo "Recursive url checking"
-    pattern_url=$(show_pattern)
+     pattern_url=$(show_pattern)
 	 do
-	   redirectCount=0
-		 response=$(curl -sL -Iw "%{http_code}" "$url")
+     redirectCount=0
+     response=$(curl -sL -Iw "%{http_code}" "$url")
      http_code=$(tail -n1 <<< "$response")  # get the last line
      content=$(sed '$ d' <<< "$response")   # get all but the last line which contains the status code
      url_content=$(grep ^Location: <<< "$response")
