@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 ## "&&" 1s command always executes, 2nd will execute if 1st finish successful.
 ## "||" 1st command always executes, 2nd command will execute if 1st fails
 ## "-x|+x" un/comment these lines to start/stop debugging
@@ -8,15 +8,8 @@
 
 home_dir=$(whoami)
 patternUrlLocation=/home/${home_dir}/list_pattern_urls.txt
-listUrlLocation=/home/${home_dir}/list_of_urls.txt # path to ours file
+listUrlLocation=/home/${home_dir}/list_of_urls2.txt # path to ours file
 listUrlResult="list.javarush.csv" # output file
-currentUrl=""
-
-# Creates text files for storing results
-echo " Creating files"
-> existUrl_$listUrlResult
-> noExistUrl_$listUrlResult
-message= "Please enter the dir name"
 
 menu () {
 while true ; do
@@ -55,11 +48,11 @@ if [[ -e $DIR ]]
     fi
 fi
 }
-# set -x # uncoment to start debugging
+
 show_pattern () {
 for i in $(cat $patternUrlLocation ) ; do
      tmp=${i}
-     $tmp
+     #echo "$tmp"
 done < ${patternUrlLocation}
 }
 
@@ -67,23 +60,23 @@ get_url () {
    create_dir
    # Use IFS to separate ours listOfUrls as a url
 	 while IFS= read -r "url"	 # echo "Recursive url checking"
-    pattern_url= print $(show_pattern)
+    pattern_url="$(show_pattern)"
 	 do
-	   redirectCount=0
-		 response=$(curl -sL -Iw "%{http_code}" "$url")
-     http_code=$(tail -n1 <<< "$response")  # get the last line
-     content=$(sed '$ d' <<< "$response")   # get all but the last line which contains the status code
-     url_content=$(grep ^Location: <<< "$response")
+	 redirectCount=0
+	 response=$(curl -sL -Iw "%{http_code}" "$url")
+     	 http_code=$(tail -n1 <<< "$response")  # get the last line
+     	 content=$(sed '$ d' <<< "$response")   # get all but the last line which contains the status code
+         url_content=$(sed -n -e 's/^.*Location: //p' <<< "$content")
 #     expiry_date=`$response | egrep -i "Expiration Date:|Expires on"| head -1 | awk '{print $NF}'`
       echo "###Getting http-code $url ###"
 
      if [[ $http_code =~ ^2:500 ]]; then
-       if [[ $http_code -eq 200 && $pattern_url == $url_content ]]; then 
-            echo "${url} Status: #200. No redirects. A url $url_content matches $url_content " >> "./existUrl_$listUrlResult"
+       if [[ $http_code -eq 200 && "$pattern_url" == "$url_content" ]]; then 
+            echo "${url} Status: #200. No redirects. A url ${url_content} matches ${url_content} " >> "./existUrl_$listUrlResult"
        fi
        elif [[ $http_code -eq 301 || $http_code -eq 200 ]]; then
             let redirectCount+=1
-            echo  "${url} Status: #301 & #200. Number of #301 redirects: $redirectCount. A url $url_content matches $url_content"  >> "./existUrl_$listUrlResult"
+            echo  "${url} Status: #301 & #200. Number of #301 redirects: $redirectCount. A url ${url_content} matches ${url_content}"  >> "./existUrl_$listUrlResult"
        elif [[ $http_code -eq 403 ]]; then
             echo "${url} Status: #403 Forbidden " >> "./noExistUrl_$listUrlResult"
        elif [[ ($http_code -eq 301 && $http_code -eq 404) || ($http_code -eq 404 && $http_code -eq 404) ]]; then
@@ -95,4 +88,3 @@ get_url () {
 done  < $listUrlLocation
 }
 menu
-# set +x
