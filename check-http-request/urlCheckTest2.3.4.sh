@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 ## "&&" 1s command always executes, 2nd will execute if 1st finish successful.
 ## "||" 1st command always executes, 2nd command will execute if 1st fails
 ## "-x|+x" un/comment these lines to start/stop debugging
@@ -18,21 +18,21 @@ while true ; do
   echo "1: Run check"
   echo "2: Show pattern (works only in debug mode)"
   echo "3: Exit"
-  read -sn1
+  read -r -sn1
   case "$REPLY" in
     1)get_url;;
     2)show_pattern;;
     3)exit 0;;
   esac
-  read -n1 -p "Press any key"
+  read -r -n1 -p "Press any key"
 done
 }
 
 create_dir () {
 message="Please enter dir name"
 declare -l DIR
-echo "Enter dir name. The dir will creates in $PWD/$DIR"
-read DIR
+echo "$message. The dir will creates in $PWD/$DIR"
+read -r DIR
 if [[ -e $DIR ]]
     then
       echo "${DIR} already exists. Please re-run the $0"
@@ -41,7 +41,7 @@ if [[ -e $DIR ]]
     if [[ -w $PWD ]] 
     then
     echo "###Creating $DIR in $PWD ###"
-     mkdir -p $DIR && cd $DIR
+     mkdir -p "$DIR" && cd "$DIR"
     else 
       echo "You don't have permissionss to $PWD"
       exit 2
@@ -50,15 +50,14 @@ fi
 }
 
 show_pattern () {
-for i in $(cat $patternUrlLocation ) ; do
-     tmp=${i}
-     #echo "$tmp"
-done < ${patternUrlLocation}
+array=$(cat "$patternUrlLocation" ) 
+for item in "${array[@]}"; do
+    echo "${item}"
+done
 }
 
 get_url () {
-   create_dir
-   # Use IFS to separate ours listOfUrls as a url
+create_dir
 	 while IFS= read -r "url"	 # echo "Recursive url checking"
     pattern_url="$(show_pattern)"
 	 do
@@ -67,7 +66,7 @@ get_url () {
      	 http_code=$(tail -n1 <<< "$response")  # get the last line
      	 content=$(sed '$ d' <<< "$response")   # get all but the last line which contains the status code
          url_content=$(sed -n -e 's/^.*Location: //p' <<< "$content")
-#     expiry_date=`$response | egrep -i "Expiration Date:|Expires on"| head -1 | awk '{print $NF}'`
+      
       echo "###Getting http-code $url ###"
 
      if [[ $http_code =~ ^2:500 ]]; then
@@ -85,6 +84,6 @@ get_url () {
           echo "${url} Status: $http_code Not Found" >> "./noExistUrl_$listUrlResult"
           exit 1
        fi
-done  < $listUrlLocation
+done  < "$listUrlLocation"
 }
 menu
